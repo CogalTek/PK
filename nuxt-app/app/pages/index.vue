@@ -11,7 +11,6 @@
 
 <script setup>
     const router = useRouter()
-
     const spacePressed = ref(false)
     let loopId = null
 
@@ -19,7 +18,7 @@
         pageTransition: { name: 'slide', mode: 'out-in' }
     })
 
-    onMounted(() => {
+    onMounted(async () => {
         const button = document.getElementById('buttonSpaceBar')
 
         const handleKeyDown = (e) => {
@@ -50,7 +49,7 @@
 
     function addletter() {
         const textElement = document.getElementById('titre')
-        const titre = "Paketehouse"
+        const titre = "Paketekhouse"
         for (let i = 0; i < titre.length; i++) {
             setTimeout(() => {
                 textElement.textContent = titre.slice(0, i + 1)
@@ -59,7 +58,8 @@
 
         setTimeout(() => {
             document.body.style.cursor = 'auto'
-            router.push('/home')
+            // Rediriger vers la page de login Kinde
+            navigateTo('/api/login', { external: true })
         }, 3000)
     }
 

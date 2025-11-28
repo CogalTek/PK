@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model User {
+    id         String      @id @default(cuid())
+    kindeId    String      @unique
+    email      String      @unique
+    firstName  String?
+    lastName   String?
+    picture    String?
+    createdAt  DateTime    @default(now())
+    updatedAt  DateTime    @updatedAt
+    devices    Device[]
+    wakeOnLans WakeOnLan[]
+    calendars  Calendar[]
+    todos      Todo[]
+}
+
+model Device {
+    id         String      @id @default(cuid())
+    ownerId    String
+    owner      User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+    macAddress String
+    name       String?
+    createdAt  DateTime    @default(now())
+    updatedAt  DateTime    @updatedAt
+    wakeOnLans WakeOnLan[]
+
+    @@index([ownerId])
+}
+
+model WakeOnLan {
+    id          String    @id @default(cuid())
+    ownerId     String
+    owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+    name        String
+    description String?
+    deviceId    String
+    device      Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+    calendarId  String?
+    calendar    Calendar? @relation(fields: [calendarId], references: [id], onDelete: SetNull)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@index([ownerId])
+    @@index([deviceId])
+    @@index([calendarId])
+}
+
+model Calendar {
+    id         String             @id @default(cuid())
+    ownerId    String
+    owner      User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+    name       String?
+    createdAt  DateTime           @default(now())
+    updatedAt  DateTime           @updatedAt
+    wakeOnLans WakeOnLan[]
+    dateTimes  DateTimeSchedule[]
+
+    @@index([ownerId])
+}
+
+model DateTimeSchedule {
+    id         String   @id @default(cuid())
+    calendarId String
+    calendar   Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+    day        Int // 0 = Dimanche, 1 = Lundi, ..., 6 = Samedi
+    hours      String // Format "HH:mm" (ex: "08:30")
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    @@index([calendarId])
+}
+
+model Todo {
+    id          String   @id @default(cuid())
+    ownerId     String
+    owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+    name        String
+    status      Boolean  @default(false)
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    @@index([ownerId])
+}

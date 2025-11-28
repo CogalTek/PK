@@ -7,5 +7,7 @@
 
 <script setup>
     import Header from '../components/header.vue'
-
+    definePageMeta({
+        middleware: ['auth-logged-in'],
+    })
 </script>
