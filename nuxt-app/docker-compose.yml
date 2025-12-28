@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  nuxt:
+    build: .
+    container_name: nuxt-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./game-data:/app/game-data
+    environment:
+      DATABASE_URL: postgresql://paketekos:PasswordAChier@192.168.1.3:5432/homelab
+      NODE_ENV: production
+      NUXT_KINDE_CLIENT_ID: ${NUXT_KINDE_CLIENT_ID}
+      NUXT_KINDE_CLIENT_SECRET: ${NUXT_KINDE_CLIENT_SECRET}
+      NUXT_KINDE_AUTH_DOMAIN: ${NUXT_KINDE_AUTH_DOMAIN}
+      NUXT_KINDE_REDIRECT_URL: ${NUXT_KINDE_REDIRECT_URL}
+      NUXT_KINDE_LOGOUT_REDIRECT_URL: ${NUXT_KINDE_LOGOUT_REDIRECT_URL}
+      NUXT_KINDE_POST_LOGIN_REDIRECT_URL: ${NUXT_KINDE_POST_LOGIN_REDIRECT_URL}
+      NUXT_KINDE_PASSWORD: ${NUXT_KINDE_PASSWORD}
+    networks:
+      - pk-network
+
+networks:
+  pk-network:
+    driver: bridge
+
+

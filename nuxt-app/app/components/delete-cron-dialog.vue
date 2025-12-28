@@ -1,12 +1,31 @@
 <template>
-    <v-dialog v-model="isOpen" max-width="400">
+    <v-dialog v-model="isOpen" max-width="500">
         <v-card>
-            <v-card-title class="text-h5">
+            <v-card-title class="text-h5 d-flex align-center">
+                <Icon name="material-symbols:warning" size="28" class="mr-2" style="color: #F44336;" />
                 Confirmer la suppression
             </v-card-title>
             
             <v-card-text>
-                Voulez-vous vraiment supprimer la tâche cron "{{ cron?.name || 'Sans nom' }}" ?
+                <p class="mb-3">
+                    Voulez-vous vraiment supprimer la tâche cron 
+                    <strong>"{{ cron?.name || 'Sans nom' }}"</strong> ?
+                </p>
+                
+                <v-alert 
+                    v-if="cron?.device"
+                    type="info" 
+                    variant="tonal" 
+                    density="compact"
+                    class="mb-0"
+                >
+                    <div class="text-body-2">
+                        <strong>Device associé:</strong> {{ cron.device.name }}
+                    </div>
+                    <div class="text-caption">
+                        Cette action est irréversible.
+                    </div>
+                </v-alert>
             </v-card-text>
 
             <v-card-actions>
@@ -15,15 +34,17 @@
                     color="grey-darken-1"
                     variant="text"
                     @click="cancel"
+                    :disabled="loading"
                 >
                     Annuler
                 </v-btn>
                 <v-btn
                     color="error"
-                    variant="text"
+                    variant="elevated"
                     @click="confirm"
                     :loading="loading"
                 >
+                    <Icon name="material-symbols:delete-outline" size="20" class="mr-1" />
                     Supprimer
                 </v-btn>
             </v-card-actions>

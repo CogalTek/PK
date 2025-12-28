@@ -25,6 +25,10 @@
 				Todo
 			</v-btn>
 
+			<v-btn variant="text" class="mx-1" @click="navigate('/server_manager')">
+				Server Manager
+			</v-btn>
+
 			<v-spacer />
 
 			<!-- Logout Button -->

@@ -7,6 +7,26 @@
                 @confirm="deleteDevice"
             />
     <Header />
+    
+    <!-- Snackbar pour les notifications -->
+    <v-snackbar
+        v-model="snackbar.show"
+        :color="snackbar.color"
+        :timeout="3000"
+        location="top"
+    >
+        {{ snackbar.message }}
+        <template v-slot:actions>
+            <v-btn
+                color="white"
+                variant="text"
+                @click="snackbar.show = false"
+            >
+                Fermer
+            </v-btn>
+        </template>
+    </v-snackbar>
+    
     <div>
         <!-- Barre Devices -->
         <v-toolbar color="surface" dark :elevation="2" class="rounded mb-4 px-4" style="background-color: #232323;">
@@ -79,6 +99,8 @@
                                     :key="cron.id"
                                     :cron="cron"
                                     @delete="confirmDeleteCron"
+                                    @start-success="(deviceName) => showSnackbar(`Paquet Wake-on-LAN envoyé à ${deviceName}`, 'success')"
+                                    @start-error="() => showSnackbar('Erreur lors de l\'envoi du paquet Wake-on-LAN', 'error')"
                                     class="mb-2"
                                 />
                             </template>
@@ -114,8 +136,21 @@ const deleting = ref(false)
 
 const dialogCron = ref(false)
 const deleteDialogCron = ref(false)
-const deviceToDeleteCron = ref(null)
+const cronToDelete = ref(null)
 const deletingCron = ref(false)
+
+// Snackbar state
+const snackbar = ref({
+    show: false,
+    message: '',
+    color: 'success'
+})
+
+const showSnackbar = (message, color = 'success') => {
+    snackbar.value.message = message
+    snackbar.value.color = color
+    snackbar.value.show = true
+}
 
 // Récupérer les devices
 const { data: devicesData, pending, refresh } = await useFetch('/api/devices', {
@@ -157,12 +192,14 @@ const onDeviceCreated = async (device) => {
     console.log('Device créé:', device)
     // Rafraîchir la liste des devices
     await refresh()
+    showSnackbar('Device créé avec succès!')
 }
 
 
 const onCronCreated = async (cron) => {
     console.log('Cron créée:', cron)
     await fetchCrons()
+    showSnackbar('Tâche cron créée avec succès!')
 }
 
 
@@ -190,9 +227,10 @@ const deleteDevice = async () => {
         await refresh()
         deleteDialog.value = false
         deviceToDelete.value = null
+        showSnackbar('Device supprimé avec succès!')
     } catch (error) {
         console.error('Erreur lors de la suppression:', error)
-        // TODO: Afficher un message d'erreur
+        showSnackbar('Erreur lors de la suppression du device', 'error')
     } finally {
         deleting.value = false
     }
@@ -210,9 +248,10 @@ const deleteCron = async () => {
         await fetchCrons()
         deleteDialogCron.value = false
         cronToDelete.value = null
+        showSnackbar('Tâche cron supprimée avec succès!')
     } catch (error) {
         console.error('Erreur lors de la suppression du cron:', error)
-        // TODO: Afficher un message d'erreur
+        showSnackbar('Erreur lors de la suppression de la tâche cron', 'error')
     } finally {
         deletingCron.value = false
     }

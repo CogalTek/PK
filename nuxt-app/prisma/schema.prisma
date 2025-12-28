@@ -25,6 +25,8 @@ model User {
     wakeOnLans WakeOnLan[]
     calendars  Calendar[]
     todos      Todo[]
+    games      Game[]
+    servers    Server[]
 }
 
 model Device {
@@ -94,4 +96,66 @@ model Todo {
     updatedAt   DateTime @updatedAt
 
     @@index([ownerId])
+}
+
+model Game {
+    id          String   @id @default(cuid())
+    ownerId     String
+    owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+    name        String
+    type        String   // "docker", "gsm", "linuxgsm"
+
+    image       String?  // pour docker
+    gsmCommand  String?  // pour GSM
+    startCmd    String?
+    stopCmd     String?
+
+    volumes     String[] // ["./data/mc:/data"]
+    env         Json?    // { ENV_VAR: "value" } - Configuration par défaut
+    ports       Int[]    // [25565, 19132]
+
+    schemaId    String?  // ID du schema de configuration (ex: "minecraft-java", "valheim")
+    
+    // Options Docker avancées
+    dockerUser      String?  // ex: "1000:1000" ou "root" - Pour les permissions
+    dockerPrivileged Boolean @default(false) // Mode privilégié pour certains serveurs
+    dockerRestart   String?  // ex: "unless-stopped" - Politique de redémarrage
+
+    status      Boolean  @default(false)
+    public      Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    servers     Server[] // relation 1-N: un Game peut avoir plusieurs instances Server
+
+    @@index([ownerId])
+}
+
+model Server {
+    id                String   @id @default(cuid())
+    ownerId           String
+    owner             User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+    gameId            String
+    game              Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+    name              String   // nom custom de l'instance (ex: "MC Survie - Saison 2")
+    type              String   // "docker" | "linuxgsm"
+
+    dockerContainerId String?  // ID du container Docker si type=docker
+    gsmPid            String?  // PID ou handle si type=linuxgsm
+
+    host              String   @default("localhost") // pour remote hosts futurs
+    ports             Json?    // ports exposés réels {"25565": 25565, "19132": 19132}
+    env               Json?    // variables d'environnement spécifiques à cette instance
+
+    status            String   @default("STOPPED") // STOPPED | STARTING | RUNNING | STOPPING | FAILED
+    logs              String?  // derniers logs ou message d'erreur
+
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+
+    @@index([ownerId])
+    @@index([gameId])
 }
